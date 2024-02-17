@@ -230,6 +230,31 @@ namespace SecretGifter.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "GroupUser",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    GroupId = table.Column<int>(type: "int", nullable: false),
+                    IsAdmin = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GroupUser", x => new { x.UserId, x.GroupId });
+                    table.ForeignKey(
+                        name: "FK_GroupUser_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GroupUser_Groups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_ApplicationUserGroup_MembersId",
                 table: "ApplicationUserGroup",
@@ -283,6 +308,11 @@ namespace SecretGifter.Data.Migrations
                 name: "IX_Events_GroupId",
                 table: "Events",
                 column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GroupUser_GroupId",
+                table: "GroupUser",
+                column: "GroupId");
         }
 
         /// <inheritdoc />
@@ -308,6 +338,9 @@ namespace SecretGifter.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Events");
+
+            migrationBuilder.DropTable(
+                name: "GroupUser");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

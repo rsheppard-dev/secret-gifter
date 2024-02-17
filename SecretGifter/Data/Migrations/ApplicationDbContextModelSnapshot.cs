@@ -312,6 +312,24 @@ namespace SecretGifter.Data.Migrations
                     b.ToTable("Groups");
                 });
 
+            modelBuilder.Entity("SecretGifter.Models.GroupUser", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.HasKey("UserId", "GroupId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("GroupUser");
+                });
+
             modelBuilder.Entity("ApplicationUserGroup", b =>
                 {
                     b.HasOne("SecretGifter.Models.Group", null)
@@ -394,6 +412,25 @@ namespace SecretGifter.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("SecretGifter.Models.GroupUser", b =>
+                {
+                    b.HasOne("SecretGifter.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecretGifter.Data.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SecretGifter.Data.ApplicationUser", b =>
