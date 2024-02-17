@@ -28,7 +28,15 @@ public class ApplicationUser : IdentityUser
 
 
     // navigation properties
-    public virtual ICollection<Group> Groups { get; set; } = [];
+    public virtual ICollection<GroupUser> GroupUsers { get; set; } = [];
     public virtual ICollection<ApplicationUser> Friends { get; set; } = [];
+
+    public virtual ICollection<Group> Groups 
+        { 
+            get 
+            {
+                return GroupUsers.Select(gu => gu.Group).ToList();
+            } 
+        }
 }
 

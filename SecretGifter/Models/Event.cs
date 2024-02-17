@@ -15,9 +15,9 @@ namespace SecretGifter.Models
         [Display(Name = "Group")]
         public int GroupId { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // navigation properties
         public virtual Group? Group { get; set; }

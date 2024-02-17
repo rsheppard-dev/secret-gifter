@@ -12,5 +12,9 @@ namespace SecretGifter.Services.Interfaces
         public Task<bool> IsUserGroupAdminAsync(int groupId, string userId);
         public Task<bool> IsUserInGroupAsync(int groupId, string userId);
         public IQueryable<ApplicationUser> GetQueryableGroupMembers(int groupId);
+        public Task<bool> MakeGroupAdminAsync(int groupId, string userId);
+        public Task<bool> RemoveGroupAdminAsync(int groupId, string userId);
+        public Task<bool> AddUserToGroupAsync(int groupId, string userId);
+        public Task<bool> RemoveUserFromGroupAsync(int groupId, string userId);
     }
 }
