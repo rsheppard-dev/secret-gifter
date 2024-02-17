@@ -16,5 +16,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         modelBuilder.Entity<GroupUser>()
             .HasKey(gu => new { gu.UserId, gu.GroupId });
+
+        modelBuilder.Entity<Group>()
+            .HasMany(g => g.GroupUsers)
+            .WithOne(gu => gu.Group)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ApplicationUser>()
+            .HasMany(u => u.GroupUsers)
+            .WithOne(gu => gu.User)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
