@@ -10,6 +10,68 @@ namespace SecretGifter.Services
         private readonly ApplicationDbContext _context = context;
         private readonly ILogger<GroupService> _logger = logger;
 
+        public async Task<Group> CreateGroupAsync(Group group)
+        {
+            try
+            {
+                _context.Groups.Add(group);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Group {groupId} created", group.Id);
+                return group;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating group {group}", group.Id);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteGroupAsync(int groupId)
+        {
+            try
+            {
+                Group? group = await _context.Groups.FindAsync(groupId);
+
+                if (group is null)
+                {
+                    _logger.LogWarning("Group {groupId} not found", groupId);
+                    return false;
+                }
+
+                _context.Groups.Remove(group);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Group {groupId} deleted", groupId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while deleting group {groupId}", groupId);
+                throw;
+            }
+        }
+
+        public async Task<Group?> GetGroupByIdAsync(int groupId)
+        {
+            try
+            {
+                Group? group = await _context.Groups.FindAsync(groupId);
+
+                if (group is null)
+                {
+                    _logger.LogWarning("Group {groupId} not found", groupId);
+                }
+
+                return group;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while getting group {groupId}", groupId);
+                throw;
+            }
+        }
+
         public IQueryable<ApplicationUser> GetQueryableGroupMembers(int groupId)
         {
             try
@@ -58,6 +120,11 @@ namespace SecretGifter.Services
                 _logger.LogError(ex, "An error occurred while checking if user {userId} is in group {groupId}", userId, groupId);
                 throw;
             }
+        }
+
+        public Task<Group> UpdateGroupAsync(Group group)
+        {
+            throw new NotImplementedException();
         }
     }
 }
