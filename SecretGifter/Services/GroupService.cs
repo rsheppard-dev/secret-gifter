@@ -5,9 +5,10 @@ using SecretGifter.Services.Interfaces;
 
 namespace SecretGifter.Services
 {
-    public class GroupService(ApplicationDbContext context, ILogger<GroupService> logger) : IGroupService
+    public class GroupService(ApplicationDbContext context, ILogger<GroupService> logger, HttpContext httpContext) : IGroupService
     {
         private readonly ApplicationDbContext _context = context;
+        private readonly HttpContext _httpContext = httpContext;
         private readonly ILogger<GroupService> _logger = logger;
 
         public async Task<bool> AddUserToGroupAsync(int groupId, string userId)
@@ -36,14 +37,14 @@ namespace SecretGifter.Services
                     return false;
                 }
 
-                GroupUser groupUser = new GroupUser
+                UserGroup userGroup = new()
                 {
                     GroupId = groupId,
                     UserId = userId,
                     IsAdmin = group.Members.Count == 0
                 };
 
-                _context.GroupUser.Add(groupUser);
+                _context.UserGroup.Add(userGroup);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User {userId} added to group {groupId}", userId, groupId);
@@ -56,12 +57,27 @@ namespace SecretGifter.Services
             }
         }
 
-        public async Task<Group> CreateGroupAsync(Group group)
+        public async Task<Group> CreateGroupAsync(Group group, string userId)
         {
             try
             {
+                ApplicationUser? user = await _context.Users.FindAsync(userId);
+
+                if (user is null)
+                {
+                    _logger.LogWarning("User {userId} not found", userId);
+                    throw new ArgumentException("User not found");
+                }
+                
                 _context.Groups.Add(group);
                 await _context.SaveChangesAsync();
+
+                var userGroup = new UserGroup
+                {
+                    GroupId = group.Id,
+                    UserId = userId,
+                    IsAdmin = true
+                };
 
                 _logger.LogInformation("Group {groupId} created", group.Id);
                 return group;
@@ -77,7 +93,7 @@ namespace SecretGifter.Services
         {
             try
             {
-                Group? group = await _context.Groups.FindAsync(groupId);
+                Group? group = await GetGroupByIdAsync(groupId);
 
                 if (group is null)
                 {
@@ -94,6 +110,21 @@ namespace SecretGifter.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while deleting group {groupId}", groupId);
+                throw;
+            }
+        }
+
+        public async Task<bool> DoesGroupExistAsync(int groupId)
+        {
+            try
+            {
+                Group? group = await GetGroupByIdAsync(groupId);
+
+                return group is not null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while checking if group {groupId} exists", groupId);
                 throw;
             }
         }
@@ -124,10 +155,10 @@ namespace SecretGifter.Services
         {
             try
             {
-                IQueryable<ApplicationUser> members = _context.GroupUser
-                    .Where(gu => gu.GroupId == groupId)
-                    .Include(gu => gu.User)
-                    .Select(gu => gu.User);
+                IQueryable<ApplicationUser> members = _context.Groups
+                    .Include(g => g.Members) 
+                    .Where(g => g.Id == groupId)   
+                    .SelectMany(g => g.Members);
 
                 return members;
             }
@@ -142,7 +173,24 @@ namespace SecretGifter.Services
         {
             try
             {
-                GroupUser? userGroup = await _context.GroupUser
+                
+                Group? group = await GetGroupByIdAsync(groupId);
+
+                if (group is null)
+                {
+                    _logger.LogWarning("Group {groupId} not found", groupId);
+                    return false;
+                }
+
+                ApplicationUser? user = await _context.Users.FindAsync(userId);
+
+                if (user is null)
+                {
+                    _logger.LogWarning("User {userId} not found", userId);
+                    return false;
+                }
+
+                UserGroup? userGroup = await _context.UserGroup
                     .FirstOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
 
                 return userGroup?.IsAdmin ?? false;
@@ -158,10 +206,15 @@ namespace SecretGifter.Services
         {
             try
             {
-                GroupUser? userGroup = await _context.GroupUser
-                    .FirstOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
+                Group? group = await GetGroupByIdAsync(groupId);
 
-                return userGroup is not null;
+                if (group is null)
+                {
+                    _logger.LogWarning("Group {groupId} not found", groupId);
+                    return false;
+                }
+
+                return group.Members.Any(u => u.Id == userId);
             }
             catch (Exception ex)
             {
@@ -174,7 +227,7 @@ namespace SecretGifter.Services
         {
             try
             {
-                GroupUser? userGroup = await _context.GroupUser
+                UserGroup? userGroup = await _context.UserGroup
                     .FirstOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
 
                 if (userGroup is null)
@@ -185,7 +238,7 @@ namespace SecretGifter.Services
 
                 userGroup.IsAdmin = true;
                 
-                _context.GroupUser.Update(userGroup);
+                _context.UserGroup.Update(userGroup);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User {userId} made admin for group {groupId}", userId, groupId);
@@ -202,7 +255,7 @@ namespace SecretGifter.Services
         {
             try
             {
-                GroupUser? userGroup = await _context.GroupUser
+                UserGroup? userGroup = await _context.UserGroup
                     .FirstOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
 
                 if (userGroup is null)
@@ -212,7 +265,7 @@ namespace SecretGifter.Services
                 }
 
                 // check if user is the only admin
-                if (userGroup.IsAdmin && _context.GroupUser.Count(gu => gu.GroupId == groupId && gu.IsAdmin) == 1)
+                if (userGroup.IsAdmin && _context.UserGroup.Count(gu => gu.GroupId == groupId && gu.IsAdmin) == 1)
                 {
                     _logger.LogWarning("User {userId} is the only admin for group {groupId}", userId, groupId);
                     return false;
@@ -220,7 +273,7 @@ namespace SecretGifter.Services
 
                 userGroup.IsAdmin = false;
                 
-                _context.GroupUser.Update(userGroup);
+                _context.UserGroup.Update(userGroup);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User {userId} removed as admin for group {groupId}", userId, groupId);
@@ -237,14 +290,6 @@ namespace SecretGifter.Services
         {
             try
             {
-                ApplicationUser? user = await _context.Users.FindAsync(userId);
-
-                if (user is null)
-                {
-                    _logger.LogWarning("User {userId} not found", userId);
-                    return false;
-                }
-
                 Group? group = await GetGroupByIdAsync(groupId);
 
                 if (group is null)
@@ -253,16 +298,15 @@ namespace SecretGifter.Services
                     return false;
                 }
 
-                GroupUser? userGroup = await _context.GroupUser
-                    .FirstOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
+                ApplicationUser? user = group.Members.FirstOrDefault(u => u.Id == userId);
 
-                if (userGroup is null)
+                if (user is null)
                 {
                     _logger.LogWarning("User {userId} not found in group {groupId}", userId, groupId);
                     return false;
                 }
 
-                _context.GroupUser.Remove(userGroup);
+                group.Members.Remove(user);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User {userId} removed from group {groupId}", userId, groupId);

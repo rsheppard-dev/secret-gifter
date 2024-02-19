@@ -231,7 +231,7 @@ namespace SecretGifter.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GroupUser",
+                name: "UserGroup",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -240,15 +240,15 @@ namespace SecretGifter.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GroupUser", x => new { x.UserId, x.GroupId });
+                    table.PrimaryKey("PK_UserGroup", x => new { x.UserId, x.GroupId });
                     table.ForeignKey(
-                        name: "FK_GroupUser_AspNetUsers_UserId",
+                        name: "FK_UserGroup_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GroupUser_Groups_GroupId",
+                        name: "FK_UserGroup_Groups_GroupId",
                         column: x => x.GroupId,
                         principalTable: "Groups",
                         principalColumn: "Id",
@@ -310,8 +310,8 @@ namespace SecretGifter.Data.Migrations
                 column: "GroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GroupUser_GroupId",
-                table: "GroupUser",
+                name: "IX_UserGroup_GroupId",
+                table: "UserGroup",
                 column: "GroupId");
         }
 
@@ -340,7 +340,7 @@ namespace SecretGifter.Data.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
-                name: "GroupUser");
+                name: "UserGroup");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

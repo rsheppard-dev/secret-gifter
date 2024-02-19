@@ -18,14 +18,14 @@ namespace SecretGifter.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // navigation properties
-        public virtual ICollection<GroupUser> GroupUsers { get; set; } = [];
+        public virtual ICollection<UserGroup> UserGroups { get; set; } = [];
         public virtual ICollection<Event> Events { get; set; } = [];
 
         public virtual ICollection<ApplicationUser> Members 
         { 
             get 
             {
-                return GroupUsers.Select(gu => gu.User).ToList();
+                return UserGroups.Select(gu => gu.User).ToList();
             } 
         }
     }

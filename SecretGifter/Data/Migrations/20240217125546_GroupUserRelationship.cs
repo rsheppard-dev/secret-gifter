@@ -5,7 +5,7 @@
 namespace SecretGifter.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class GroupUserRelationship : Migration
+    public partial class UserGroupRelationship : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

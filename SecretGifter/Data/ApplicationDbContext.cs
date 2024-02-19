@@ -8,23 +8,30 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<Group> Groups { get; set; }
     public DbSet<Event> Events { get; set; }
-    public DbSet<GroupUser> GroupUser { get; set; }
+    public DbSet<UserGroup> UserGroup { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<GroupUser>()
-            .HasKey(gu => new { gu.UserId, gu.GroupId });
+        modelBuilder.Entity<UserGroup>()
+            .HasKey(ug => new { ug.UserId, ug.GroupId });
 
-        modelBuilder.Entity<Group>()
-            .HasMany(g => g.GroupUsers)
-            .WithOne(gu => gu.Group)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<UserGroup>()
+            .HasOne(ug => ug.User)
+            .WithMany(u => u.UserGroups)
+            .HasForeignKey(ug => ug.UserId)
+            .OnDelete(DeleteBehavior.Cascade);;
 
-        modelBuilder.Entity<ApplicationUser>()
-            .HasMany(u => u.GroupUsers)
-            .WithOne(gu => gu.User)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<UserGroup>()
+            .HasOne(ug => ug.Group)
+            .WithMany(g => g.UserGroups)
+            .HasForeignKey(ug => ug.GroupId)
+            .OnDelete(DeleteBehavior.Cascade);;
+        
+        modelBuilder.Entity<UserGroup>()
+            .Property(ug => ug.IsAdmin)
+            .HasDefaultValue(false)
+            .IsRequired();
     }
 }

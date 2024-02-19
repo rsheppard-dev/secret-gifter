@@ -315,7 +315,7 @@ namespace SecretGifter.Data.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("SecretGifter.Models.GroupUser", b =>
+            modelBuilder.Entity("SecretGifter.Models.UserGroup", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -330,7 +330,7 @@ namespace SecretGifter.Data.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupUser");
+                    b.ToTable("UserGroup");
                 });
 
             modelBuilder.Entity("ApplicationUserGroup", b =>
@@ -417,7 +417,7 @@ namespace SecretGifter.Data.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("SecretGifter.Models.GroupUser", b =>
+            modelBuilder.Entity("SecretGifter.Models.UserGroup", b =>
                 {
                     b.HasOne("SecretGifter.Models.Group", "Group")
                         .WithMany()

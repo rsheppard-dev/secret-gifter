@@ -312,7 +312,7 @@ namespace SecretGifter.Data.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("SecretGifter.Models.GroupUser", b =>
+            modelBuilder.Entity("SecretGifter.Models.UserGroup", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -327,7 +327,7 @@ namespace SecretGifter.Data.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupUser");
+                    b.ToTable("UserGroup");
                 });
 
             modelBuilder.Entity("ApplicationUserGroup", b =>
@@ -414,16 +414,16 @@ namespace SecretGifter.Data.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("SecretGifter.Models.GroupUser", b =>
+            modelBuilder.Entity("SecretGifter.Models.UserGroup", b =>
                 {
                     b.HasOne("SecretGifter.Models.Group", "Group")
-                        .WithMany("GroupUsers")
+                        .WithMany("UserGroups")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SecretGifter.Data.ApplicationUser", "User")
-                        .WithMany("GroupUsers")
+                        .WithMany("UserGroups")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -437,14 +437,14 @@ namespace SecretGifter.Data.Migrations
                 {
                     b.Navigation("Friends");
 
-                    b.Navigation("GroupUsers");
+                    b.Navigation("UserGroups");
                 });
 
             modelBuilder.Entity("SecretGifter.Models.Group", b =>
                 {
                     b.Navigation("Events");
 
-                    b.Navigation("GroupUsers");
+                    b.Navigation("UserGroups");
                 });
 #pragma warning restore 612, 618
         }

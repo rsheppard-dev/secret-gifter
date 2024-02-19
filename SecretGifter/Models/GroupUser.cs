@@ -2,7 +2,7 @@ using SecretGifter.Data;
 
 namespace SecretGifter.Models
 {
-    public class GroupUser
+    public class UserGroup
     {
         public string UserId { get; set; } = string.Empty;
         public int GroupId { get; set; }
